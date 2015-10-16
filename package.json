@@ -1,7 +1,7 @@
 {
 	"name": "packpin",
 	"description": "PackPin NodeJS API Wrapper",
-	"version": "4.1.4",
+	"version": "1.0.0",
 	"homepage": "https://github.com/aessig/packpin-nodejs",
 	"repository": {
 		"type": "git",
