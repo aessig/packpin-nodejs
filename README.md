@@ -33,31 +33,50 @@ var packpin = require('packpin')('API_KEY');
 
 ```
 
-Couriers
+Carriers
 -
 
-Gets a list of available couriers. Returns the total number of couriers along with an array of available couriers.
+#### Get carriers:
 
-#### Get couriers:
+Gets a list of available carriers. Returns the total number of carriers along with an array of available carriers.
 
 Callback:
 
 ```
 err: the error message
-result: the couriers object
+result: the carriers object
 
 ```
 
 Example:
 
 ```
-packpin.getCouriers(function(err, result) {
-  console.log('Support courier count: ' + result.total);
-  console.log('Couriers: ' + result.couriers);
+packpin.getCarriers(function(err, result) {
+  console.log('Carriers: ' + result.body);
 });
 
 ```
 
+#### Detect carriers:
+
+Returns a list of carriers that match the tracking code
+
+Callback:
+
+```
+err: the error message
+result: the carriers object
+
+```
+
+Example:
+
+```
+packpin.detectCarriers(code, function(err, result) {
+  console.log('Carriers: ' + result.body);
+});
+
+```
 
 
 Trackings
@@ -87,7 +106,7 @@ function(err, result)
 Example:
 
 ```
-packpin.createTracking('1Z21E98F0314447088', {slug: 'ups'}, function(err, result) {
+packpin.createTracking('1Z21E98F0314447088', 'ups', {description: "My Super Parcel", track_postal_code: "XXX", track_ship_date: "2015-12-25", track_destination_country : "Switzerland" }, function(err, result) {
   if (err) {
     console.log(err);
   } else {
@@ -107,7 +126,6 @@ Accepts:
 ```
 options: An object with options to limit results
 fields: Array of fields to return
-https://www.packpin.com/docs/api/4/tracking/get-trackings
 ```
 
 callback:
@@ -120,7 +138,7 @@ function(err, results)
 Example get all trackings with courier: ups
 
 ```
-packpin.getTrackings({slug: 'ups'}, function(err, results) {
+packpin.getTrackings({page: 1, limit: 25}, function(err, results) {
   if (err) {
     console.log(err);
   } else {

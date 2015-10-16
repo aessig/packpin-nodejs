@@ -167,18 +167,23 @@ module.exports = function(api_key, options) {
 		 * @param {Object=} params - Additional options to attach.
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'createTracking': function(tracking_number, params, callback) {
+		'createTracking': function(code, carrier, params, callback) {
 
 			if (!callback) {
 				callback = params;
 				params = {};
 			}
 
-			if (!_.isString(tracking_number)) {
+			if (!_.isString(code)) {
 				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: tracking number.'));
 			}
 
-			params.tracking_number = tracking_number;
+			if (!_.isString(carrier)) {
+				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: carrier code.'));
+			}
+
+			params.code = code;
+			params.carrier = carrier;
 
 			_call('POST', '/trackings', {tracking: params}, function(err, body) {
 				if (err) {
@@ -217,26 +222,22 @@ module.exports = function(api_key, options) {
 		 *
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'getTracking': function(slug, tracking_number, options, callback) {
+		'getTracking': function(code, carrier, callback) {
 
 			if (!callback) {
 				callback = options;
 				options = {};
 			}
 
-			if (!_.isString(tracking_number)) {
+			if (!_.isString(code)) {
 				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: tracking number.'));
 			}
 
-			if (!_.isString(slug)) {
-				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: tracking number.'));
+			if (!_.isString(carrier)) {
+				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: carrier code.'));
 			}
 
-			if (Array.isArray(options.fields)) {
-				options.fields = options.fields.join(',');
-			}
-
-			_call('GET', '/trackings/' + slug + '/' + tracking_number + '?' + _serialize(options), {}, function(err, body) {
+			_call('GET', '/trackings/' + carrier + '/' + code, {}, function(err, body) {
 				if (err) {
 					callback(err, null);
 					return;
@@ -315,8 +316,21 @@ module.exports = function(api_key, options) {
 		 *  https://www.packpin.com/docs/api/3.0/tracking/put-trackings-slug-tracking_number
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'updateTracking': function(slug, tracking_number, options, callback) {
-			_call('PUT', '/trackings/' + slug + '/' + tracking_number, {tracking: options}, function(err, body) {
+		'updateTracking': function(code, carrier, description, callback) {
+
+			if (!_.isString(code)) {
+				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: tracking number.'));
+			}
+
+			if (!_.isString(carrier)) {
+				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: carrier code.'));
+			}
+
+			if (!_.isString(description)) {
+				callback(_getError(602, 'MissingParameter', 'Missing Required Parameter: description.'));
+			}
+
+			_call('PUT', '/trackings/' + carrier + '/' + code, {description: description}, function(err, body) {
 				if (err) {
 					callback(err, null);
 					return;
@@ -337,39 +351,6 @@ module.exports = function(api_key, options) {
 				callback(null, body.data);
 			});
 		},
-
-
-		/**
-		 * Retrack an expired tracking once.
-		 * @param {string} slug
-		 * @param {string} tracking_number
-		 * @param {Array} options Fields to update:
-		 *  https://www.packpin.com/docs/api/3.0/tracking/put-trackings-slug-tracking_number
-		 * @param {function(Object, Object=)} callback - callback function
-		 */
-		'retrackTracking': function(slug, tracking_number, options, callback) {
-			_call('POST', '/trackings/' + slug + '/' + tracking_number + '/retrack', {tracking: options}, function(err, body) {
-				if (err) {
-					callback(err, null);
-					return;
-				}
-
-				// Check for valid meta code
-				if (!body.meta || !body.meta.code || body.meta.code !== 200) {
-					callback(body.meta, null);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || !body.data.tracking || typeof body.data.tracking !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
-					return;
-				}
-
-				callback(null, body.data);
-			});
-		},
-
 
 		/**
 		 * Delete a specific tracking number.
@@ -378,14 +359,13 @@ module.exports = function(api_key, options) {
 		 * @param {Object|function(Object, Object=)} required_fields - required fields object
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'deleteTracking': function(slug, tracking_number, required_fields, callback) {
+		'deleteTracking': function(code, carrier, callback) {
 
 			if (!callback) {
-				callback = required_fields;
-				required_fields = {};
+				callback = code;
 			}
 
-			_call('DELETE', '/trackings/' + slug + '/' + tracking_number + '?' + _serialize(required_fields), {}, function(err, body) {
+			_call('DELETE', '/trackings/' + carrier + '/' + code, {}, function(err, body) {
 
 				if (err) {
 					callback(err, null);
@@ -414,64 +394,12 @@ module.exports = function(api_key, options) {
 			});
 		},
 
-
-		/**
-		 * Get the last checkpoint information of a tracking number
-		 * @param {string} slug
-		 * @param {string} tracking_number
-		 * @param {Array|string|function(Object, Object=)} fields Fields to update:
-		 * @param {function(Object, Object=)} callback - callback function
-		 */
-		'getLastCheckpoint': function(slug, tracking_number, fields, callback) {
-
-			if (!callback) {
-				callback = fields;
-				fields = [];
-			}
-
-			if (Array.isArray(fields)) {
-				fields = fields.join(',');
-			}
-
-			if (fields.length > 0) {
-				fields = 'fields=' + fields;
-			}
-
-			_call('GET', '/last_checkpoint/' + slug + '/' + tracking_number + '?' + fields, {}, function(err, body) {
-
-				if (err) {
-					callback(err, null);
-					return;
-				}
-
-				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
-					return;
-				}
-
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || !body.data.checkpoint || typeof body.data.checkpoint !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
-					return;
-				}
-
-				callback(null, body.data);
-			});
-		},
-
-
 		/**
 		 * Gets all available couriers.
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'getCouriers': function(callback) {
-			_call('GET', '/couriers', {}, function(err, body) {
+		'getCarriers': function(callback) {
+			_call('GET', '/carriers', {}, function(err, body) {
 				if (err) {
 					callback(err, null);
 					return;
@@ -507,30 +435,14 @@ module.exports = function(api_key, options) {
 		 * @param {string|function(Object, Object=)=} detect_mode - optional, accept "strict" or "tracking_number"
 		 * @param {function(Object, Object=)} callback - callback function
 		 */
-		'detectCouriers': function(tracking_number, required_fields, detect_mode, callback) {
+		'detectCarriers': function(code, callback) {
 			if (!callback) {
-				callback = detect_mode;
-				detect_mode = 'tracking_number';
+				callback = code;
 			}
 
-			if (!callback) {
-				callback = required_fields;
-				required_fields = {};
-			}
+			var param = {	code: code	};
 
-			var param = {
-				tracking: {
-					tracking_number: tracking_number,
-					tracking_account_number: required_fields.tracking_account_number,
-					tracking_postal_code: required_fields.tracking_postal_code,
-					tracking_ship_date: required_fields.tracking_ship_date,
-					tracking_key: required_fields.tracking_key,
-					tracking_destination_country: required_fields.tracking_destination_country,
-					detect_mode: detect_mode
-				}
-			};
-
-			_call('POST', '/couriers/detect/', param, function(err, body) {
+			_call('POST', '/carriers/detect/', param, function(err, body) {
 				if (err) {
 					callback(err, null);
 					return;
