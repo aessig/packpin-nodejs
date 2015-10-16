@@ -241,6 +241,3 @@ License
 =========
 
 GNU v2
-=======
-# Packpin NodeJS SDK
->>>>>>> origin/master
