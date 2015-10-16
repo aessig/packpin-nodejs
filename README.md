@@ -210,7 +210,7 @@ function(err, result)
 Example:
 
 ```
-packpin.updateTracking('ups', '1Z21E98F0314447088', {title: 'My Shipment'},
+packpin.updateTracking('1Z21E98F0314447088', 'ups', {title: 'My Shipment'},
   function(err, result) {
     if (err) {
       console.log(err);
@@ -221,39 +221,39 @@ packpin.updateTracking('ups', '1Z21E98F0314447088', {title: 'My Shipment'},
 
 ```
 
-#Last Checkpoint
--
 
-Gets the last checkpoint for a specific tracking number.
+#### Delete a tracking number
+
+Remove a tracking code
 
 Accepts:
 
 ```
-slug: The slug for the tracking number, e.g., 'ups'
-tracking_number: The tracking number to retrieve.
-fields: Array of fields to return
 
 ```
 
-Callback:
+callback:
 
 ```
 function(err, result)
 
 ```
 
+
 Example:
 
 ```
-packpin.last_checkpoint('ups', '1Z21E98F0314447088', ['tracking_number','slug','checkpoints'], function(err, result) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log(result);
-  }
-});
+packpin.deleteTracking('1Z21E98F0314447088', 'ups',
+  function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+    }
+  });
 
 ```
+
 
 License
 =========
