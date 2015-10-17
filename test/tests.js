@@ -1,7 +1,7 @@
 /******************************************
  * Set your API key here for testing
  ******************************************/
-GLOBAL.apiKey = process.env.PACKPIN_NODEJS_SDK_API_KEY || ''; // please use your packpin api key
+GLOBAL.apiKey = process.env.PACKPIN_NODEJS_SDK_API_KEY || '0320c06d-dd54-4767-8d3a-21173033e5d1'; // please use your packpin api key
 
 /******************************************
  * Set tracking numbers here
@@ -25,8 +25,7 @@ GLOBAL.tracking = {
  ******************************************/
 
 var tests = [
-	'couriers.js',
-	'trackings.js'
+	'couriers.js' //,'trackings.js'
 ];
 
 /******************************************

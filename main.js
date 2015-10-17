@@ -142,8 +142,7 @@ module.exports = function(api_key, options) {
 				//don't put callback inside try catch to prevent catching user's throw
 				try {
 					body = JSON.parse(body);
-
-					if (!body || !body.meta) {
+					if (!body || !body.statusCode) {
 						return_err = _getError(601, 'ParseResponseError', 'Could not parse response.');
 					} else {
 						return_body = body;
@@ -151,7 +150,6 @@ module.exports = function(api_key, options) {
 				} catch (e) {
 					return_err = _getError(601, 'ParseResponseError', 'Could not parse response.');
 				}
-
 				callback(return_err, return_body);
 			}
 
@@ -185,31 +183,27 @@ module.exports = function(api_key, options) {
 			params.code = code;
 			params.carrier = carrier;
 
-			_call('POST', '/trackings', {tracking: params}, function(err, body) {
+			console.log(params);
+
+			_call('POST', '/trackings', params, function(err, body) {
 				if (err) {
 					callback(err, null);
 					return;
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (!(body.meta.code === 201 || body.meta.code === 202)) {
-					callback(body.meta, body.data);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || !body.data.tracking || typeof body.data.tracking !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
+				if (body.statusCode !== 201) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
 				// Return the tracking number and data
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		},
 
@@ -244,24 +238,18 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || !body.data.tracking || typeof body.data.tracking !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
+				if (body.statusCode !== 200) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
 				// Return the time and checkpoints
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 
 			return null;
@@ -286,24 +274,18 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || typeof body.data !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
+				if (body.statusCode !== 200) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
 				// Return the time and checkpoints
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		},
 
@@ -337,18 +319,17 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code || body.meta.code !== 200) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				// Check for valid data contents
-				if (!body.data || !body.data.tracking || typeof body.data.tracking !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
+				if (body.statusCode !== 200) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		},
 
@@ -373,24 +354,18 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
-					return;
-				}
-
-				// Check for valid data contents
-				if (!body.data || !body.data.tracking || typeof body.data.tracking !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
+				if (body.statusCode !== 204) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
 				// Return the tracking number and slug
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		},
 
@@ -406,23 +381,17 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
+				if (body.statusCode !== 200) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
-				// Check for valid data contents
-				if (!body.data || typeof body.data !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
-					return;
-				}
-
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		},
 
@@ -449,23 +418,17 @@ module.exports = function(api_key, options) {
 				}
 
 				// Check for valid meta code
-				if (!body.meta || !body.meta.code) {
-					callback(body.meta, null);
+				if (!body.body || !body.statusCode) {
+					callback(body.statusCode, null);
 					return;
 				}
 
-				if (body.meta.code !== 200) {
-					callback(body.meta, body.data);
+				if (body.statusCode !== 200) {
+					callback(body.statusCode, body.body);
 					return;
 				}
 
-				// Check for valid data contents
-				if (!body.data || !body.data.couriers || typeof body.data.couriers !== 'object') {
-					callback(_getError(603, 'ResponseError', 'Invalid response body.'));
-					return;
-				}
-
-				callback(null, body.data);
+				callback(null, body.body);
 			});
 		}
 
